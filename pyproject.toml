@@ -1,0 +1,23 @@
+[project]
+name = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil"
+version = "0.1.0"
+description = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]>=0.203.0,<1.0.0"
+]
+
+[project.scripts]
+squad_de_agentes_inteligentes___mvp_desenvolvimento_agil = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil.main:run"
+run_crew = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil.main:run"
+train = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil.main:train"
+replay = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil.main:replay"
+test = "squad_de_agentes_inteligentes___mvp_desenvolvimento_agil.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
