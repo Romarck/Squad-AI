@@ -176,15 +176,15 @@ def executar_crew_com_tracking(
     log_progress(2, "Analista de Sistemas", "✅ Especificação técnica gerada!")
 
     # =========================================================================
-    # ETAPA 3: DESENVOLVEDOR PYTHON
+    # ETAPA 3: FOX FULL-STACK DEVELOPER
     # =========================================================================
-    log_progress(3, "Desenvolvedor Python", "Iniciando desenvolvimento...")
+    log_progress(3, "Fox Full-Stack Developer", "Iniciando desenvolvimento...")
 
     desenvolvedor = Agent(
-        role="Desenvolvedor Python",
-        goal="Criar código Python funcional e sintaticamente válido com testes unitários",
-        backstory="""Você é um Desenvolvedor Python sênior com foco em qualidade.
-        Segue melhores práticas: type hints, docstrings, tratamento de erros e testes abrangentes.""",
+        role="Fox Full-Stack Developer",
+        goal="Implementar código web front-end ou scripts back-end funcionais baseados na especificação, sem se restringir a linguagens.",
+        backstory="""Você é Fox, um Full-Stack Developer sênior com foco em qualidade e entregas end-to-end.
+        Se a especificação pedir UI (HTML/JS/CSS), você entrega UI. Se pedir Backend (Python/Node), você entrega Backend.""",
         llm=llm,
         verbose=False,
         allow_delegation=False
@@ -192,29 +192,28 @@ def executar_crew_com_tracking(
 
     task_dev = Task(
         description=f"""
-        Com base na especificação técnica, criar:
+        Com base na especificação técnica, criar o código solicitado:
 
         ESPECIFICAÇÃO:
         {resultado_analista}
 
         Entregar:
-        1. Código Python principal completo
-        2. Testes unitários usando pytest
+        1. O código-fonte funcional para a feature (HTML/CSS/JS se for UI, ou Python/outros se for backend).
+        2. Testes apropriados ou código preparado para teste, se aplicável.
 
         Requisitos obrigatórios:
-        - Type hints em todas as funções
-        - Docstrings detalhadas
-        - Tratamento adequado de exceções
-        - Testes cobrindo casos normais e excepcionais
-        - Código seguindo PEP 8
+        - Seguir fielmente as tecnologias ditadas pela especificação.
+        - Documentação e clareza no código.
+        - Tratamento adequado de erros e edge-cases.
+        - Use blocos markdown para seu código (ex: ```html ou ```python) para facilitar a visualização de preview.
 
-        IMPORTANTE: Apresente TODO o código pronto para uso, separado em blocos de código.
+        IMPORTANTE: Apresente TODO o código pronto para uso.
         """,
-        expected_output="Código Python completo E testes unitários completos, ambos prontos para uso",
+        expected_output="Código final da feature (front-end ou back-end) completamente funcional e pronto para uso dentro de blocos md.",
         agent=desenvolvedor
     )
 
-    log_progress(3, "Desenvolvedor Python", "Implementando código e testes...")
+    log_progress(3, "Fox Full-Stack Developer", "Implementando código e testes...")
 
     crew_dev = Crew(
         agents=[desenvolvedor],
@@ -224,8 +223,8 @@ def executar_crew_com_tracking(
     )
 
     resultado_dev = str(crew_dev.kickoff())
-    resultados["Desenvolvedor Python"] = resultado_dev
-    log_progress(3, "Desenvolvedor Python", "✅ Código e testes implementados!")
+    resultados["Fox Full-Stack Developer"] = resultado_dev
+    log_progress(3, "Fox Full-Stack Developer", "✅ Código e testes implementados!")
 
     # =========================================================================
     # ETAPA 4: QUALITY ASSURANCE

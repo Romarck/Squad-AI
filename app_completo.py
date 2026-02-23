@@ -20,7 +20,10 @@ load_dotenv(override=True)
 # Importar database
 from database import get_db
 
-# Importar utils
+# Importar auth
+from auth import login_user, register_user, reset_password, logout_user, check_auth
+
+# Utils
 from utils.backup_manager import BackupManager
 
 # Configuração da página
@@ -31,33 +34,57 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS customizado
+# CSS customizado - Identidade Visual Nuclea
 st.markdown("""
 <style>
+    html, body, .stApp, p, span, div, h1, h2, h3, h4, h5, h6 {
+        font-family: 'ABCFavorit', 'ABCFavoritVariant', 'Inter', sans-serif;
+    }
+    code, pre, code span, pre span {
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+    
     .main-header {
         text-align: center;
         padding: 1.5rem;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 10px;
+        background: #000000;
+        color: #FFFFFF;
+        border-radius: 8px;
+        border-bottom: 4px solid #66FFCC;
         margin-bottom: 2rem;
     }
     .stProgress > div > div > div > div {
-        background-color: #667eea;
+        background-color: #66FFCC;
     }
     .demanda-card {
         padding: 1rem;
         border-radius: 8px;
-        border-left: 4px solid #667eea;
-        background-color: #f8f9fa;
+        border-left: 4px solid #66FFCC;
+        background-color: #F5F5F5;
+        color: #000000;
         margin: 0.5rem 0;
     }
     .stat-box {
         padding: 1rem;
         border-radius: 8px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: #000000;
+        color: #FFFFFF;
+        border: 1px solid #66FFCC;
         text-align: center;
+    }
+    
+    /* CTAs */
+    .stButton > button[data-baseweb="button"]:has(span) {
+        border-radius: 8px !important;
+    }
+    .stButton > button[kind="primary"] {
+        background-color: #66FFCC !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        border: none !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background-color: #4DE6B3 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -76,6 +103,90 @@ if 'demanda_editando' not in st.session_state:
 if 'limpar_formulario' not in st.session_state:
     st.session_state.limpar_formulario = False
 
+# Authentication Check
+if not check_auth():
+    st.markdown("""
+    <div class="main-header">
+        <h1>🤖 Squad de Agentes Inteligentes</h1>
+        <p>Acesso Restrito</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if "auth_mode" not in st.session_state:
+        st.session_state.auth_mode = "login"
+        
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.session_state.auth_mode == "login":
+            st.markdown("### Login")
+            email = st.text_input("Email", placeholder="seu@email.com", key="login_email")
+            password = st.text_input("Senha", type="password", key="login_pass")
+            
+            if st.button("Entrar", type="primary", use_container_width=True):
+                if email and password:
+                    user, error = login_user(email, password)
+                    if user:
+                        st.success("Login efetuado com sucesso!")
+                        st.rerun()
+                    else:
+                        st.error(error)
+                else:
+                    st.warning("Preencha email e senha.")
+            
+            col_a, col_b = st.columns(2)
+            with col_a:
+                if st.button("Criar Conta", use_container_width=True):
+                    st.session_state.auth_mode = "register"
+                    st.rerun()
+            with col_b:
+                if st.button("Esqueci a Senha", use_container_width=True):
+                    st.session_state.auth_mode = "forgot"
+                    st.rerun()
+
+        elif st.session_state.auth_mode == "register":
+            st.markdown("### Criar Conta")
+            email = st.text_input("Email", placeholder="seu@email.com", key="reg_email")
+            password = st.text_input("Senha", type="password", key="reg_pass")
+            password_confirm = st.text_input("Confirmar Senha", type="password", key="reg_pass2")
+            
+            if st.button("Registrar", type="primary", use_container_width=True):
+                if email and password and password == password_confirm:
+                    success, msg = register_user(email, password)
+                    if success:
+                        st.success(msg)
+                        st.session_state.auth_mode = "login"
+                    else:
+                        st.error(msg)
+                elif password != password_confirm:
+                    st.warning("As senhas não coincidem.")
+                else:
+                    st.warning("Preencha todos os campos.")
+                    
+            if st.button("Voltar ao Login", use_container_width=True):
+                st.session_state.auth_mode = "login"
+                st.rerun()
+
+        elif st.session_state.auth_mode == "forgot":
+            st.markdown("### Recuperar Senha")
+            email = st.text_input("Email", placeholder="seu@email.com", key="forgot_email")
+            
+            if st.button("Enviar E-mail de Recuperação", type="primary", use_container_width=True):
+                if email:
+                    success, msg = reset_password(email)
+                    if success:
+                        st.success(msg)
+                        st.session_state.auth_mode = "login"
+                    else:
+                        st.error(msg)
+                else:
+                    st.warning("Preencha o e-mail.")
+                    
+            if st.button("Voltar ao Login", use_container_width=True):
+                st.session_state.auth_mode = "login"
+                st.rerun()
+                
+    st.stop() # Interrompe a execução para não logados
+
 # Inicializar banco de dados
 db = get_db()
 
@@ -89,20 +200,28 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
+    st.markdown(f"👤 **Logado como:** {st.session_state.user.email if st.session_state.user else 'Usuário'}")
+    if st.button("🚪 Sair", use_container_width=True):
+        logout_user()
+        st.rerun()
+        
+    st.markdown("---")
+    
     st.header("ℹ️ Sobre o Sistema")
     st.markdown("""
     **4 Agentes IA colaborando:**
 
     1. 👔 **Product Owner**
     2. 📋 **Analista de Sistemas**
-    3. 💻 **Desenvolvedor Python**
+    3. 💻 **Fox Full-Stack Developer**
     4. ✅ **Quality Assurance**
 
     ---
     """)
 
     # Estatísticas
-    stats = db.obter_estatisticas()
+    user_id_filtro = None if st.session_state.db_user.get('role') == 'admin' else st.session_state.db_user['id']
+    stats = db.obter_estatisticas(user_id=user_id_filtro)
 
     st.markdown("### 📊 Estatísticas")
 
@@ -132,12 +251,18 @@ with st.sidebar:
     """)
 
 # Tabs principais
-tab1, tab2, tab3, tab4 = st.tabs([
+tabs_names = [
     "📝 Nova Demanda",
     "📚 Histórico",
     "📊 Execução",
     "📄 Resultados"
-])
+]
+if st.session_state.db_user and st.session_state.db_user.get('role') == 'admin':
+    tabs_names.append("👑 Admin")
+
+tabs = st.tabs(tabs_names)
+tab1, tab2, tab3, tab4 = tabs[:4]
+tab_admin = tabs[4] if len(tabs) > 4 else None
 
 # ============================================================================
 # TAB 1: NOVA DEMANDA
@@ -237,7 +362,8 @@ with tab1:
                     descricao=demanda_descricao,
                     usar_jira=usar_jira,
                     project_key=project_key,
-                    tags=tags
+                    tags=tags,
+                    user_id=st.session_state.db_user['id']
                 )
 
                 if success:
@@ -259,6 +385,7 @@ with tab1:
                     demanda_id = db.criar_demanda(
                         titulo=demanda_titulo,
                         descricao=demanda_descricao,
+                        user_id=st.session_state.db_user['id'],
                         usar_jira=usar_jira,
                         project_key=project_key,
                         tags=tags
@@ -321,12 +448,14 @@ with tab2:
     st.markdown("---")
 
     # Buscar demandas
+    user_id_filtro = None if st.session_state.db_user.get('role') == 'admin' else st.session_state.db_user['id']
+    
     if termo_pesquisa:
-        demandas = db.pesquisar_demandas(termo_pesquisa, limit=limite)
+        demandas = db.pesquisar_demandas(termo_pesquisa, user_id=user_id_filtro, limit=limite)
     elif filtro_status != "Todos":
-        demandas = db.listar_demandas(status=filtro_status.lower(), limit=limite)
+        demandas = db.listar_demandas(status=filtro_status.lower(), user_id=user_id_filtro, limit=limite)
     else:
-        demandas = db.listar_demandas(limit=limite)
+        demandas = db.listar_demandas(user_id=user_id_filtro, limit=limite)
 
     if not demandas:
         st.info("📭 Nenhuma demanda encontrada")
@@ -383,7 +512,8 @@ with tab2:
 
                     # Botão Deletar
                     if st.button("🗑️ Deletar", key=f"del_{demanda['id']}", use_container_width=True):
-                        if db.deletar_demanda(demanda['id']):
+                        uid_trava = None if st.session_state.db_user.get('role') == 'admin' else st.session_state.db_user['id']
+                        if db.deletar_demanda(demanda['id'], user_id=uid_trava):
                             st.success(f"✅ Demanda #{demanda['id']} deletada!")
                             st.rerun()
                         else:
@@ -418,7 +548,8 @@ with tab3:
                     descricao=demanda_descricao,
                     usar_jira=usar_jira,
                     project_key=project_key,
-                    tags=tags
+                    tags=tags,
+                    user_id=st.session_state.db_user['id']
                 )
 
                 st.session_state.demanda_id_atual = demanda_id
@@ -432,6 +563,7 @@ with tab3:
                 demanda_id = db.criar_demanda(
                     titulo=demanda_titulo,
                     descricao=demanda_descricao,
+                    user_id=st.session_state.db_user['id'],
                     usar_jira=usar_jira,
                     project_key=project_key,
                     tags=tags
@@ -497,11 +629,11 @@ with tab3:
                     analista_container.warning("⏳ Analista de Sistemas - Pendente")
 
                 if step >= 3:
-                    dev_container.success("✅ Desenvolvedor Python - Concluído")
+                    dev_container.success("✅ Fox Full-Stack Developer - Concluído")
                 elif step == 3:
-                    dev_container.info("⚙️ Desenvolvedor Python - Trabalhando...")
+                    dev_container.info("⚙️ Fox Full-Stack Developer - Trabalhando...")
                 else:
-                    dev_container.warning("⏳ Desenvolvedor Python - Pendente")
+                    dev_container.warning("⏳ Fox Full-Stack Developer - Pendente")
 
                 if step >= 4:
                     qa_container.success("✅ Quality Assurance - Concluído")
@@ -591,8 +723,32 @@ with tab4:
             st.markdown(st.session_state.resultados.get("Analista de Sistemas", "Sem resultado"))
 
         with result_tab3:
-            st.markdown("### 💻 Desenvolvedor Python - Código e Testes")
-            st.markdown(st.session_state.resultados.get("Desenvolvedor Python", "Sem resultado"))
+            st.markdown("### 💻 Fox Full-Stack Developer - Código e Testes")
+            
+            tab_preview, tab_code = st.tabs(["👁️ Preview", "📝 Code"])
+            with tab_preview:
+                dev_result = st.session_state.resultados.get("Fox Full-Stack Developer", st.session_state.resultados.get("Desenvolvedor Python", "Sem resultado"))
+                import re
+                import streamlit.components.v1 as components
+                html_match = re.search(r'```html\n(.*?)\n```', dev_result, re.DOTALL)
+                if html_match:
+                    components.html(html_match.group(1), height=600, scrolling=True)
+                else:
+                    # Faz o fallback renderizando markdown normal, mas dividindo st.code para os blocos de código
+                    parts = re.split(r'(```[\s\S]*?```)', dev_result)
+                    for part in parts:
+                        if part.startswith('```') and part.endswith('```'):
+                            match = re.match(r'```(\w*)\n([\s\S]*?)\n*```', part)
+                            if match:
+                                lang = match.group(1)
+                                code_str = match.group(2)
+                                st.code(code_str, language=lang if lang else "python")
+                            else:
+                                st.markdown(part)
+                        elif part.strip():
+                            st.markdown(part)
+            with tab_code:
+                st.code(dev_result, language="markdown")
 
         with result_tab4:
             st.markdown("### ✅ Quality Assurance - Relatório de Qualidade")
@@ -653,3 +809,55 @@ with tab4:
                 st.session_state.execucao_completa = False
                 st.session_state.demanda_id_atual = None
                 st.rerun()
+
+# ============================================================================
+# TAB 5: ADMIN (Se aplicável)
+# ============================================================================
+if tab_admin:
+    with tab_admin:
+        st.header("👑 Área Administrativa")
+        st.markdown("Gerecie os usuários cadastrados e o controle de acesso ao The Squad-AI.")
+        
+        usuarios = db.listar_usuarios()
+        
+        if not usuarios:
+            st.info("Nenhum usuário cadastrado.")
+        else:
+            for usr in usuarios:
+                with st.expander(f"{usr['email']} ({usr['role'].upper()}) - {usr['status'].upper()}"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**ID:** {usr['id']}")
+                        st.write(f"**Email:** {usr['email']}")
+                        st.write(f"**Role:** {usr['role']}")
+                        st.write(f"**Status Crtl:** {usr['status']}")
+                        st.write(f"**Cadastrado em:** {usr['created_at']}")
+                    with col2:
+                        # Actions
+                        if usr['status'] == 'pendente':
+                            if st.button("✅ Aprovar Acesso", key=f"apv_{usr['id']}", type="primary"):
+                                db.atualizar_status_usuario(usr['id'], "aprovado")
+                                st.rerun()
+                            if st.button("🚫 Bloquear Acesso", key=f"blq1_{usr['id']}"):
+                                db.atualizar_status_usuario(usr['id'], "bloqueado")
+                                st.rerun()
+                        elif usr['status'] == 'aprovado':
+                            if usr['email'].lower() != 'romarck@gmail.com': # protecao do master
+                                if st.button("🚫 Bloquear Acesso", key=f"blq2_{usr['id']}"):
+                                    db.atualizar_status_usuario(usr['id'], "bloqueado")
+                                    st.rerun()
+                                if usr['role'] == 'user':
+                                    if st.button("Promover para Admin", key=f"prm_{usr['id']}"):
+                                        db.atualizar_status_usuario(usr['id'], "aprovado", "admin")
+                                        st.rerun()
+                                else:
+                                    if st.button("Rebaixar para User", key=f"reb_{usr['id']}"):
+                                        db.atualizar_status_usuario(usr['id'], "aprovado", "user")
+                                        st.rerun()
+                            else:
+                                st.warning("Administrador mestre não pode ser bloqueado ou rebaixado.")
+                        elif usr['status'] == 'bloqueado':
+                            if st.button("✅ Desbloquear e Aprovar", key=f"dbp_{usr['id']}", type="primary"):
+                                db.atualizar_status_usuario(usr['id'], "aprovado")
+                                st.rerun()
+
