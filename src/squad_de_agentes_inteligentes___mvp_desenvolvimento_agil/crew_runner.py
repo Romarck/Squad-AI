@@ -6,6 +6,7 @@ Para uso com a interface web Streamlit
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai_tools import FileReadTool
 from typing import Dict, Callable, Optional
+import os
 import time
 
 
@@ -41,8 +42,9 @@ def executar_crew_com_tracking(
 
     # LLM comum
     llm = LLM(
-        model="gemini/gemini-2.0-flash-lite",
+        model="gemini/gemini-2.5-flash",
         temperature=0.7,
+        api_key=os.getenv("GEMINI_API_KEY")
     )
 
     # =========================================================================

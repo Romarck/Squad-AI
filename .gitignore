@@ -79,3 +79,21 @@ dmypy.json
 tmp/
 temp/
 *.tmp
+
+# Environment & Secrets (AIOS)
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Dependencies (AIOS)
+node_modules/
+node_modules
+
+# IDE & OS (AIOS)
+Thumbs.db
+
+# AIOS Local (AIOS)
+.aios-core/local/
+.claude/settings.local.json
+.aios/install-log.txt

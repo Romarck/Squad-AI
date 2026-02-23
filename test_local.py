@@ -27,10 +27,12 @@ from crewai_tools import FileReadTool
 
 print("⚙️  Inicializando agentes...\n")
 
+import os
 # LLM comum para todos os agentes
 llm = LLM(
-    model="gemini/gemini-2.0-flash-lite",
+    model="gemini/gemini-2.5-flash",
     temperature=0.7,
+    api_key=os.getenv("GEMINI_API_KEY")
 )
 
 # Agente Analista de Sistemas (sem dependência de Jira)

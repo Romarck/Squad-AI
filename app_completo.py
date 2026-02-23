@@ -15,10 +15,13 @@ src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 # Importar database
 from database import get_db
+
+# Importar utils
+from utils.backup_manager import BackupManager
 
 # Configuração da página
 st.set_page_config(
@@ -220,8 +223,12 @@ with tab1:
     with col_btn1:
         if st.session_state.modo_edicao:
             if st.button("💾 Atualizar Demanda", use_container_width=True, type="primary"):
-                # Processar tags
-                tags = [tag.strip() for tag in tags_input.split(",")] if tags_input else []
+                # Validação
+                if not demanda_titulo or not demanda_descricao:
+                    st.error("❌ Preencha título e descrição!")
+                else:
+                    # Processar tags
+                    tags = [tag.strip() for tag in tags_input.split(",")] if tags_input else []
 
                 # Atualizar no banco
                 success = db.atualizar_demanda(
@@ -454,6 +461,9 @@ with tab3:
         progress_bar = st.progress(0)
         status_text = st.empty()
 
+        # Container para logs em tempo real
+        status_container = st.status("🤖 Squad trabalhando...", expanded=True)
+        
         # Containers para cada agente
         st.subheader("🔄 Pipeline de Execução")
         po_container = st.empty()
@@ -469,6 +479,7 @@ with tab3:
             def atualizar_progresso(step, agent_name, message):
                 progress_bar.progress(step / 4)
                 status_text.text(f"🔄 {agent_name}: {message}")
+                status_container.write(f"**{agent_name}**: {message}")
 
                 # Atualizar cards
                 if step >= 1:
@@ -503,7 +514,7 @@ with tab3:
             atualizar_progresso(0, "Sistema", "Iniciando...")
 
             # Executar crew
-            with st.spinner("🤖 Squad trabalhando... Isso pode levar 3-6 minutos"):
+            with status_container:
                 resultados = executar_crew_com_tracking(
                     demanda_titulo=demanda_titulo,
                     demanda_descricao=demanda_descricao,
@@ -511,6 +522,9 @@ with tab3:
                     project_key=project_key,
                     progress_callback=atualizar_progresso
                 )
+            
+            # Finalizar status
+            status_container.update(label="✅ Execução concluída!", state="complete", expanded=False)
 
             # Salvar resultados no banco
             status_text.text(f"💾 Salvando resultados de {len(resultados)} agente(s)...")
@@ -521,6 +535,15 @@ with tab3:
             # Atualizar status
             db.atualizar_status(st.session_state.demanda_id_atual, 'concluida', marcar_executada=True)
             status_text.text("✅ Status atualizado para 'concluída'")
+
+            # Realizar backup automático (Story 2.1)
+            try:
+                bm = BackupManager()
+                bm.criar_backup()
+                bm.limpar_backups_antigos(manter_ultimos=10)
+                status_text.text("💾 Backup automático realizado!")
+            except Exception as e:
+                st.warning(f"⚠️ Erro ao criar backup: {e}")
 
             # Finalização
             progress_bar.progress(1.0)

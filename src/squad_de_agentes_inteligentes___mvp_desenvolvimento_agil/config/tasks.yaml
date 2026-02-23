@@ -1,49 +1,57 @@
 ---
 criar_user_story_no_jira:
-  description: 'PRIMEIRO testar a conectividade e permissões do Jira usando a ferramenta
+  description: >
+    PRIMEIRO testar a conectividade e permissões do Jira usando a ferramenta
     Jira Connectivity Tester para o projeto {project_key}. Se os testes passarem,
     criar uma user story estruturada no Jira com base na demanda fornecida. A user
     story deve incluir: título claro ({demanda_titulo}), descrição detalhada ({demanda_descricao}),
     e 2-3 critérios de aceitação simples. IMPORTANTE: TODA a user story deve ser
     escrita em português brasileiro (pt-BR), incluindo título, descrição e critérios
-    de aceitação.'
-  expected_output: 'Issue criada no Jira com key (ex: PROJ-123), user story formatada
-    e critérios de aceitação claros, TUDO em português brasileiro (pt-BR)'
+    de aceitação.
+  expected_output: >
+    Issue criada no Jira com key (ex: PROJ-123), user story formatada
+    e critérios de aceitação claros, TUDO em português brasileiro (pt-BR)
   agent: product_owner
 gerar_especificacao_tecnica:
-  description: 'Ler a user story criada no Jira e gerar uma especificação técnica
+  description: >
+    Ler a user story criada no Jira e gerar uma especificação técnica
     detalhada em formato markdown, INTEIRAMENTE em português brasileiro (pt-BR). A
     especificação deve incluir: objetivo, implementação técnica, arquivo de destino,
     função principal, tratamento de erros e cenários de teste necessários. Todos os
-    títulos, descrições e explicações devem estar em português do Brasil.'
-  expected_output: Especificação técnica completa em formato markdown, escrita INTEIRAMENTE
+    títulos, descrições e explicações devem estar em português do Brasil.
+  expected_output: >
+    Especificação técnica completa em formato markdown, escrita INTEIRAMENTE
     em português brasileiro (pt-BR), com todos os detalhes de implementação, incluindo
     nome do arquivo, função principal e casos de teste
   agent: analista_de_sistemas
   context:
   - criar_user_story_no_jira
 desenvolver_codigo_python:
-  description: 'Com base na especificação técnica gerada, criar código Python funcional
+  description: >
+    Com base na especificação técnica gerada, criar código Python funcional
     e testes unitários usando pytest. OBRIGATORIAMENTE usar a ferramenta pytest simulator
     para validar sintaxe do código antes de finalizar. O código deve incluir: função
     principal com type hints, tratamento de erros adequado, documentação e testes
     unitários abrangentes cobrindo casos normais e excepcionais. IMPORTANTE: TODOS
     os comentários, docstrings, mensagens de erro, nomes de variáveis e strings de
-    teste devem estar em português brasileiro (pt-BR).'
-  expected_output: Código Python principal e arquivo de testes unitários com pytest,
+    teste devem estar em português brasileiro (pt-BR).
+  expected_output: >
+    Código Python principal e arquivo de testes unitários com pytest,
     ambos VALIDADOS sintaxicamente pela ferramenta pytest simulator, funcionais e
     com TODA documentação, comentários e mensagens em português brasileiro (pt-BR)
   agent: desenvolvedor_python
   context:
   - gerar_especificacao_tecnica
 executar_testes_e_validacao_final:
-  description: Executar validação do código Python gerado usando pytest simulator,
+  description: >
+    Executar validação do código Python gerado usando pytest simulator,
     verificar qualidade do código e atualizar a issue no Jira com os resultados dos
     testes. Validar se o código atende aos critérios de aceitação da user story original.
     IMPORTANTE: Gerar relatório de testes e checklist de qualidade INTEIRAMENTE em
     português brasileiro (pt-BR). Atualizar o Jira com comentários em português do
     Brasil.
-  expected_output: Relatório de testes completo em português brasileiro (pt-BR) com
+  expected_output: >
+    Relatório de testes completo em português brasileiro (pt-BR) com
     status Pass/Fail, métricas de qualidade, checklist de validação e issue do Jira
     atualizada com resultado final em português do Brasil
   agent: quality_assurance
