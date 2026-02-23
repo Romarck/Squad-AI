@@ -26,20 +26,20 @@ gerar_especificacao_tecnica:
   agent: analista_de_sistemas
   context:
   - criar_user_story_no_jira
-desenvolver_codigo_python:
+desenvolver_codigo_fullstack:
   description: >
-    Com base na especificação técnica gerada, criar código Python funcional
-    e testes unitários usando pytest. OBRIGATORIAMENTE usar a ferramenta pytest simulator
-    para validar sintaxe do código antes de finalizar. O código deve incluir: função
-    principal com type hints, tratamento de erros adequado, documentação e testes
-    unitários abrangentes cobrindo casos normais e excepcionais. IMPORTANTE: TODOS
-    os comentários, docstrings, mensagens de erro, nomes de variáveis e strings de
-    teste devem estar em português brasileiro (pt-BR).
+    Com base na especificação técnica gerada, implementar a feature completa ponta a ponta,
+    conectando front-end, back-end e banco de dados conforme necessidade. Diagnosticar e
+    resolver bloqueios cross-layer. Executar testes e validações aplicáveis em múltiplas 
+    camadas (Unit, Integration, E2E). Seguir fielmente os 7 dogmas operacionais do Fox, focar 
+    na integração e usar solução simples primeiro. IMPORTANTE: TODA documentação, comentários 
+    e mensagens devem estar em português brasileiro (pt-BR). Sua comunicação deve ser direta, 
+    usando emojis de forma minimalista, e concluída com a assinatura do desenvolvedor.
   expected_output: >
-    Código Python principal e arquivo de testes unitários com pytest,
-    ambos VALIDADOS sintaxicamente pela ferramenta pytest simulator, funcionais e
-    com TODA documentação, comentários e mensagens em português brasileiro (pt-BR)
-  agent: desenvolvedor_python
+    Código full-stack implementado, validado ponta a ponta, sintaticamente e 
+    logicamente correto, com todas as documentações em PT-BR e assinatura do Fox 
+    no final das intervenções.
+  agent: full_stack_developer
   context:
   - gerar_especificacao_tecnica
 executar_testes_e_validacao_final:
@@ -56,4 +56,4 @@ executar_testes_e_validacao_final:
     atualizada com resultado final em português do Brasil
   agent: quality_assurance
   context:
-  - desenvolver_codigo_python
+  - desenvolver_codigo_fullstack

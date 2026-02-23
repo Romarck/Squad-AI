@@ -48,11 +48,11 @@ class SquadDeAgentesInteligentesMvpDesenvolvimentoAgilCrew:
         )
     
     @agent
-    def desenvolvedor_python(self) -> Agent:
+    def full_stack_developer(self) -> Agent:
 
 
         return Agent(
-            config=self.agents_config["desenvolvedor_python"],
+            config=self.agents_config["full_stack_developer"],
 
 
             tools=[
@@ -152,9 +152,9 @@ class SquadDeAgentesInteligentesMvpDesenvolvimentoAgilCrew:
         )
     
     @task
-    def desenvolver_codigo_python(self) -> Task:
+    def desenvolver_codigo_fullstack(self) -> Task:
         return Task(
-            config=self.tasks_config["desenvolver_codigo_python"],
+            config=self.tasks_config["desenvolver_codigo_fullstack"],
             markdown=False,
             
             
